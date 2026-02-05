@@ -1,0 +1,104 @@
+@page "/todos"
+@rendermode InteractiveServer
+@inject ITodoService TodoService
+
+<PageTitle>Todo List</PageTitle>
+
+<div class="todo-container">
+    <h1>Todo List</h1>
+
+    <div class="todo-input">
+        <input type="text"
+               @bind="newTodoTitle"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               placeholder="What needs to be done?"
+               autofocus />
+        <button class="btn btn-primary" @onclick="AddTodo" disabled="@string.IsNullOrWhiteSpace(newTodoTitle)">
+            Add
+        </button>
+    </div>
+
+    @if (todos is null)
+    {
+        <p class="loading">Loading...</p>
+    }
+    else if (!todos.Any())
+    {
+        <p class="empty-state">No todos yet. Add one above!</p>
+    }
+    else
+    {
+        <div class="todo-stats">
+            <span>@todos.Count(t => !t.IsCompleted) items left</span>
+            @if (todos.Any(t => t.IsCompleted))
+            {
+                <button class="btn btn-link" @onclick="ClearCompleted">
+                    Clear completed
+                </button>
+            }
+        </div>
+
+        <ul class="todo-list">
+            @foreach (var todo in todos)
+            {
+                <TodoItemComponent
+                    Item="todo"
+                    OnToggle="ToggleTodo"
+                    OnDelete="DeleteTodo" />
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private List<TodoItem>? todos;
+    private string newTodoTitle = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTodos();
+    }
+
+    private async Task LoadTodos()
+    {
+        var items = await TodoService.GetAllAsync();
+        todos = items.ToList();
+    }
+
+    private async Task AddTodo()
+    {
+        if (string.IsNullOrWhiteSpace(newTodoTitle))
+            return;
+
+        await TodoService.AddAsync(newTodoTitle);
+        newTodoTitle = string.Empty;
+        await LoadTodos();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await AddTodo();
+        }
+    }
+
+    private async Task ToggleTodo(Guid id)
+    {
+        await TodoService.ToggleAsync(id);
+        await LoadTodos();
+    }
+
+    private async Task DeleteTodo(Guid id)
+    {
+        await TodoService.DeleteAsync(id);
+        await LoadTodos();
+    }
+
+    private async Task ClearCompleted()
+    {
+        await TodoService.ClearCompletedAsync();
+        await LoadTodos();
+    }
+}
