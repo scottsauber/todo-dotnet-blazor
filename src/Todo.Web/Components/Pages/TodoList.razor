@@ -45,15 +45,30 @@
                 <TodoItemComponent
                     Item="todo"
                     OnToggle="ToggleTodo"
-                    OnDelete="DeleteTodo" />
+                    OnDelete="ConfirmDelete" />
             }
         </ul>
     }
 </div>
 
+@if (showDeleteModal)
+{
+    <div class="modal-backdrop" @onclick="CloseDeleteModal" aria-label="Close dialog"></div>
+    <div class="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <h3 id="delete-modal-title">Are you sure?</h3>
+        <p>This will permanently delete the todo item.</p>
+        <div class="modal-buttons">
+            <button class="btn btn-danger" @onclick="ConfirmDeleteYes">Yes</button>
+            <button class="btn btn-secondary" @onclick="CloseDeleteModal">No</button>
+        </div>
+    </div>
+}
+
 @code {
     private List<TodoItem>? todos;
     private string newTodoTitle = string.Empty;
+    private bool showDeleteModal;
+    private Guid? todoToDeleteId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,10 +105,26 @@
         await LoadTodos();
     }
 
-    private async Task DeleteTodo(Guid id)
+    private void ConfirmDelete(Guid id)
     {
-        await TodoService.DeleteAsync(id);
-        await LoadTodos();
+        todoToDeleteId = id;
+        showDeleteModal = true;
+    }
+
+    private async Task ConfirmDeleteYes()
+    {
+        if (todoToDeleteId.HasValue)
+        {
+            await TodoService.DeleteAsync(todoToDeleteId.Value);
+            await LoadTodos();
+        }
+        CloseDeleteModal();
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+        todoToDeleteId = null;
     }
 
     private async Task ClearCompleted()
