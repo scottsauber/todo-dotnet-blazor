@@ -293,7 +293,26 @@ public class TodoListTests : BunitContext
     #region DeleteTodo Tests
 
     [Fact]
-    public async Task DeleteTodo_WhenDeleteButtonClicked_CallsServiceDeleteAsync()
+    public async Task DeleteTodo_WhenDeleteButtonClicked_ShowsConfirmationModal()
+    {
+        // Arrange
+        var todoId = Guid.NewGuid();
+        var todos = new List<TodoItem> { new() { Id = todoId, Title = "Test todo" } };
+        _mockTodoService.GetAllAsync().Returns(Task.FromResult<IReadOnlyList<TodoItem>>(todos));
+
+        var cut = Render<TodoList>();
+
+        // Act
+        await cut.Find(".btn-delete").ClickAsync(new());
+
+        // Assert
+        var modal = cut.Find(".delete-confirmation-modal");
+        modal.ShouldNotBeNull();
+        modal.QuerySelector("h3")!.TextContent.ShouldContain("Confirm Delete");
+    }
+
+    [Fact]
+    public async Task DeleteTodo_WhenYesClicked_CallsServiceDeleteAsync()
     {
         // Arrange
         var todoId = Guid.NewGuid();
@@ -303,15 +322,53 @@ public class TodoListTests : BunitContext
 
         var cut = Render<TodoList>();
 
-        // Act
+        // Act - Show modal then click Yes
         await cut.Find(".btn-delete").ClickAsync(new());
+        await cut.Find(".btn-danger").ClickAsync(new());
 
         // Assert
         await _mockTodoService.Received(1).DeleteAsync(todoId);
     }
 
     [Fact]
-    public async Task DeleteTodo_AfterDeleting_ReloadsTodoList()
+    public async Task DeleteTodo_WhenNoClicked_DoesNotCallServiceDeleteAsync()
+    {
+        // Arrange
+        var todoId = Guid.NewGuid();
+        var todos = new List<TodoItem> { new() { Id = todoId, Title = "Test todo" } };
+        _mockTodoService.GetAllAsync().Returns(Task.FromResult<IReadOnlyList<TodoItem>>(todos));
+
+        var cut = Render<TodoList>();
+
+        // Act - Show modal then click No
+        await cut.Find(".btn-delete").ClickAsync(new());
+        await cut.Find(".btn-secondary").ClickAsync(new());
+
+        // Assert
+        await _mockTodoService.DidNotReceive().DeleteAsync(Arg.Any<Guid>());
+    }
+
+    [Fact]
+    public async Task DeleteTodo_WhenNoClicked_HidesModal()
+    {
+        // Arrange
+        var todoId = Guid.NewGuid();
+        var todos = new List<TodoItem> { new() { Id = todoId, Title = "Test todo" } };
+        _mockTodoService.GetAllAsync().Returns(Task.FromResult<IReadOnlyList<TodoItem>>(todos));
+
+        var cut = Render<TodoList>();
+
+        // Act - Show modal then click No
+        await cut.Find(".btn-delete").ClickAsync(new());
+        await cut.Find(".btn-secondary").ClickAsync(new());
+
+        // Assert
+        var modal = cut.FindAll(".delete-confirmation-modal");
+        modal.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task DeleteTodo_AfterConfirmingDelete_ReloadsTodoList()
     {
         // Arrange
         var callCount = 0;
@@ -327,11 +384,51 @@ public class TodoListTests : BunitContext
         var cut = Render<TodoList>();
         var initialCallCount = callCount;
 
+        // Act - Show modal then click Yes
+        await cut.Find(".btn-delete").ClickAsync(new());
+        await cut.Find(".btn-danger").ClickAsync(new());
+
+        // Assert
+        callCount.ShouldBeGreaterThan(initialCallCount);
+    }
+
+    [Fact]
+    public async Task DeleteTodo_ModalHasYesAndNoButtons()
+    {
+        // Arrange
+        var todoId = Guid.NewGuid();
+        var todos = new List<TodoItem> { new() { Id = todoId, Title = "Test todo" } };
+        _mockTodoService.GetAllAsync().Returns(Task.FromResult<IReadOnlyList<TodoItem>>(todos));
+
+        var cut = Render<TodoList>();
+
         // Act
         await cut.Find(".btn-delete").ClickAsync(new());
 
         // Assert
-        callCount.ShouldBeGreaterThan(initialCallCount);
+        var yesButton = cut.Find(".btn-danger");
+        var noButton = cut.Find(".btn-secondary");
+        yesButton.TextContent.ShouldBe("Yes");
+        noButton.TextContent.ShouldBe("No");
+    }
+
+    [Fact]
+    public async Task DeleteTodo_WhenEscapePressed_HidesModal()
+    {
+        // Arrange
+        var todoId = Guid.NewGuid();
+        var todos = new List<TodoItem> { new() { Id = todoId, Title = "Test todo" } };
+        _mockTodoService.GetAllAsync().Returns(Task.FromResult<IReadOnlyList<TodoItem>>(todos));
+
+        var cut = Render<TodoList>();
+
+        // Act - Show modal then press Escape
+        await cut.Find(".btn-delete").ClickAsync(new());
+        await cut.Find(".delete-confirmation-modal").KeyDownAsync(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        // Assert
+        var modal = cut.FindAll(".delete-confirmation-modal");
+        modal.Count.ShouldBe(0);
     }
 
     #endregion

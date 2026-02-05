@@ -45,15 +45,30 @@
                 <TodoItemComponent
                     Item="todo"
                     OnToggle="ToggleTodo"
-                    OnDelete="DeleteTodo" />
+                    OnDelete="ShowDeleteConfirmation" />
             }
         </ul>
     }
 </div>
 
+@if (showDeleteConfirmation)
+{
+    <div class="modal-backdrop"></div>
+    <div class="delete-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle" @onkeydown="HandleModalKeyDown">
+        <h3 id="deleteModalTitle">Confirm Delete</h3>
+        <p>Are you sure you want to delete this todo?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-danger" @onclick="ConfirmDelete">Yes</button>
+            <button class="btn btn-secondary" @onclick="CancelDelete">No</button>
+        </div>
+    </div>
+}
+
 @code {
     private List<TodoItem>? todos;
     private string newTodoTitle = string.Empty;
+    private bool showDeleteConfirmation;
+    private Guid? todoIdToDelete;
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,16 +99,40 @@
         }
     }
 
+    private void HandleModalKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            CancelDelete();
+        }
+    }
+
     private async Task ToggleTodo(Guid id)
     {
         await TodoService.ToggleAsync(id);
         await LoadTodos();
     }
 
-    private async Task DeleteTodo(Guid id)
+    private void ShowDeleteConfirmation(Guid id)
     {
-        await TodoService.DeleteAsync(id);
-        await LoadTodos();
+        todoIdToDelete = id;
+        showDeleteConfirmation = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (todoIdToDelete.HasValue)
+        {
+            await TodoService.DeleteAsync(todoIdToDelete.Value);
+            await LoadTodos();
+        }
+        CancelDelete();
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteConfirmation = false;
+        todoIdToDelete = null;
     }
 
     private async Task ClearCompleted()
