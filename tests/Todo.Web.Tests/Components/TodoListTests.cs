@@ -19,8 +19,6 @@ public class TodoListTests : BunitContext
         Services.AddSingleton(_mockTodoService);
     }
 
-    #region Initial Render Tests
-
     [Fact]
     public void InitialRender_WithNoTodos_DisplaysEmptyState()
     {
@@ -80,10 +78,6 @@ public class TodoListTests : BunitContext
         input.GetAttribute("placeholder").ShouldBe("What needs to be done?");
     }
 
-    #endregion
-
-    #region Add Button State Tests
-
     [Fact]
     public void AddButton_WhenInputIsEmpty_IsDisabled()
     {
@@ -127,10 +121,6 @@ public class TodoListTests : BunitContext
         var button = cut.Find("button.btn-primary");
         button.HasAttribute("disabled").ShouldBeFalse();
     }
-
-    #endregion
-
-    #region AddTodo Tests
 
     [Fact]
     public async Task AddTodo_WhenButtonClicked_CallsServiceAddAsync()
@@ -190,10 +180,6 @@ public class TodoListTests : BunitContext
         callCount.ShouldBeGreaterThan(initialCallCount);
     }
 
-    #endregion
-
-    #region HandleKeyDown Tests
-
     [Fact]
     public async Task HandleKeyDown_WhenEnterPressed_AddsNewTodo()
     {
@@ -242,10 +228,6 @@ public class TodoListTests : BunitContext
         await _mockTodoService.DidNotReceive().AddAsync(Arg.Any<string>());
     }
 
-    #endregion
-
-    #region ToggleTodo Tests
-
     [Fact]
     public async Task ToggleTodo_WhenCheckboxClicked_CallsServiceToggleAsync()
     {
@@ -288,10 +270,6 @@ public class TodoListTests : BunitContext
         callCount.ShouldBeGreaterThan(initialCallCount);
     }
 
-    #endregion
-
-    #region DeleteTodo Tests
-
     [Fact]
     public async Task DeleteTodo_WhenDeleteButtonClicked_CallsServiceDeleteAsync()
     {
@@ -333,10 +311,6 @@ public class TodoListTests : BunitContext
         // Assert
         callCount.ShouldBeGreaterThan(initialCallCount);
     }
-
-    #endregion
-
-    #region ClearCompleted Tests
 
     [Fact]
     public void ClearCompletedButton_WhenNoCompletedTodos_IsNotDisplayed()
@@ -394,10 +368,6 @@ public class TodoListTests : BunitContext
         await _mockTodoService.Received(1).ClearCompletedAsync();
     }
 
-    #endregion
-
-    #region Items Count Display Tests
-
     [Fact]
     public void ItemsCount_WithAllIncompleteTodos_DisplaysCorrectCount()
     {
@@ -454,5 +424,4 @@ public class TodoListTests : BunitContext
         cut.Find(".todo-stats span").TextContent.ShouldContain("0 items left");
     }
 
-    #endregion
 }

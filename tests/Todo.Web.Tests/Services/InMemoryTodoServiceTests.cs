@@ -14,8 +14,6 @@ public class InMemoryTodoServiceTests
         _sut = new InMemoryTodoService();
     }
 
-    #region AddAsync Tests
-
     [Fact]
     public async Task AddAsync_WithValidTitle_ReturnsTodoItemWithCorrectTitle()
     {
@@ -108,10 +106,6 @@ public class InMemoryTodoServiceTests
         allTodos.Count.ShouldBe(3);
     }
 
-    #endregion
-
-    #region GetAllAsync Tests
-
     [Fact]
     public async Task GetAllAsync_WhenNoTodosExist_ReturnsEmptyList()
     {
@@ -169,10 +163,6 @@ public class InMemoryTodoServiceTests
         result.ShouldBeAssignableTo<IReadOnlyList<TodoItem>>();
     }
 
-    #endregion
-
-    #region GetByIdAsync Tests
-
     [Fact]
     public async Task GetByIdAsync_WithExistingId_ReturnsTodoItem()
     {
@@ -210,10 +200,6 @@ public class InMemoryTodoServiceTests
         // Assert
         result.ShouldBeNull();
     }
-
-    #endregion
-
-    #region ToggleAsync Tests
 
     [Fact]
     public async Task ToggleAsync_WithExistingIncompleteTodo_SetsIsCompletedToTrue()
@@ -298,10 +284,6 @@ public class InMemoryTodoServiceTests
         retrieved!.IsCompleted.ShouldBeTrue();
     }
 
-    #endregion
-
-    #region DeleteAsync Tests
-
     [Fact]
     public async Task DeleteAsync_WithExistingId_ReturnsTrue()
     {
@@ -369,10 +351,6 @@ public class InMemoryTodoServiceTests
         firstDelete.ShouldBeTrue();
         secondDelete.ShouldBeFalse();
     }
-
-    #endregion
-
-    #region UpdateAsync Tests
 
     [Fact]
     public async Task UpdateAsync_WithExistingIdAndValidTitle_UpdatesTitle()
@@ -456,10 +434,6 @@ public class InMemoryTodoServiceTests
         retrieved!.Title.ShouldBe("Updated");
     }
 
-    #endregion
-
-    #region ClearCompletedAsync Tests
-
     [Fact]
     public async Task ClearCompletedAsync_WithNoCompletedTodos_DoesNotRemoveAnything()
     {
@@ -519,10 +493,6 @@ public class InMemoryTodoServiceTests
         await Should.NotThrowAsync(async () => await _sut.ClearCompletedAsync());
     }
 
-    #endregion
-
-    #region Thread Safety Tests
-
     [Fact]
     public async Task ConcurrentAddOperations_AllItemsAreAdded()
     {
@@ -559,5 +529,4 @@ public class InMemoryTodoServiceTests
         allTodos.ShouldAllBe(t => t.IsCompleted);
     }
 
-    #endregion
 }

@@ -8,8 +8,6 @@ namespace Todo.Web.Tests.Components;
 
 public class TodoItemComponentTests : BunitContext
 {
-    #region Render Tests
-
     [Fact]
     public void Render_DisplaysTodoTitle()
     {
@@ -86,10 +84,6 @@ public class TodoItemComponentTests : BunitContext
         deleteButton.TextContent.Trim().ShouldBe("\u00d7");
     }
 
-    #endregion
-
-    #region CSS Class Tests
-
     [Fact]
     public void Render_IncompleteTodo_DoesNotHaveCompletedClass()
     {
@@ -121,10 +115,6 @@ public class TodoItemComponentTests : BunitContext
         listItem.ClassList.ShouldContain("todo-item");
         listItem.ClassList.ShouldContain("completed");
     }
-
-    #endregion
-
-    #region OnToggle EventCallback Tests
 
     [Fact]
     public async Task OnToggle_WhenCheckboxChanged_InvokesCallbackWithCorrectId()
@@ -158,10 +148,6 @@ public class TodoItemComponentTests : BunitContext
         await Should.NotThrowAsync(async () => await cut.Find("input[type='checkbox']").ChangeAsync(new()));
     }
 
-    #endregion
-
-    #region OnDelete EventCallback Tests
-
     [Fact]
     public async Task OnDelete_WhenDeleteButtonClicked_InvokesCallbackWithCorrectId()
     {
@@ -193,10 +179,6 @@ public class TodoItemComponentTests : BunitContext
         // Act & Assert
         await Should.NotThrowAsync(async () => await cut.Find(".btn-delete").ClickAsync(new()));
     }
-
-    #endregion
-
-    #region Data Binding Tests
 
     [Fact]
     public void Render_TodoWithSpecialCharacters_DisplaysCorrectly()
@@ -241,10 +223,6 @@ public class TodoItemComponentTests : BunitContext
         cut.Find(".todo-title").TextContent.ShouldBeEmpty();
     }
 
-    #endregion
-
-    #region Component Structure Tests
-
     [Fact]
     public void Render_HasCorrectStructure()
     {
@@ -264,5 +242,4 @@ public class TodoItemComponentTests : BunitContext
         cut.Find("li > button.btn-delete").ShouldNotBeNull();
     }
 
-    #endregion
 }
